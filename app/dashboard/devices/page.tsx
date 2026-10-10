@@ -11,16 +11,24 @@ export default function Devices() {
   const [now, setNow] = useState(Date.now());
 
   const load = useCallback(async () => {
-    const d = await (await fetch("/api/machines")).json().catch(() => ({}));
-    if (d.error === "no_database") setError("Database is not connected yet. Add DATABASE_URL and run npm run db:setup.");
+    const response = await fetch("/api/machines");
+    const d = await response.json().catch(() => ({}));
+    if (!response.ok || !d.ok) {
+      setError(d.error === "no_database"
+        ? "Database is not configured. Set DATABASE_URL and run npm run db:setup against that database."
+        : d.error ?? `Could not load machines (HTTP ${response.status}).`);
+      setMachines([]);
+      return;
+    }
     setMachines(d.machines ?? []);
   }, []);
   useEffect(() => { void load(); const t = setInterval(() => { setNow(Date.now()); void load(); }, 5000); return () => clearInterval(t); }, [load]);
 
   async function add(e: FormEvent) {
     e.preventDefault(); setError("");
-    const d = await (await fetch("/api/machines", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name }) })).json().catch(() => ({}));
-    if (!d.ok) return setError(d.error ?? "Could not add the machine.");
+    const response = await fetch("/api/machines", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name }) });
+    const d = await response.json().catch(() => ({}));
+    if (!response.ok || !d.ok) return setError(d.error ?? `Could not add the machine (HTTP ${response.status}).`);
     setFresh({ name: d.machine.name, key: d.apiKey }); setName(""); void load();
   }
 
