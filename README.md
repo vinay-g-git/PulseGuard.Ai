@@ -1,5 +1,7 @@
 # Machine Anomaly Monitor (PS-48)
 
+**Live Demo** : https://pulse-guard-ai-nu.vercel.app
+
 Single Next.js (App Router, TS, Tailwind, Recharts) app. Runs on the Vercel free tier: no database, no backend services, no ML libraries.
 
 ## Run
